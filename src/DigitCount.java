@@ -208,7 +208,7 @@ public class DigitCount {
         crackBr.close();
         condBr.close();
     }*/
-
+//
     public void processLine (String curLine) {
 
         int length = curLine.length();
