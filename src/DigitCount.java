@@ -102,7 +102,7 @@ public class DigitCount {
 
 
         for (int i = 32; i<127; i++){
-            int numChars = charCount<i>;
+            int numChars = charCount.get(i);
             System.out.println((char)i + " " + numChars);
 
         }
@@ -217,7 +217,7 @@ public class DigitCount {
             while (index >=0) {
                 System.out.println("Found " + (char)curChar + " at " + index);
                 int location = curChar + (127 * index);
-                countMap.put(curChar,  charCount[location]++);
+                countMap.put(curChar,  charCount.set(location, charCount.get(location)+1));
 
 
                 /*if(i == 0)
