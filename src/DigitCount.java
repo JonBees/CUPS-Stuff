@@ -11,12 +11,6 @@ import java.util.HashMap;
 
 public class DigitCount {
     //initializes all of the variables
-
-    public int zeroCount, oneCount, twoCount, threeCount, fourCount, fiveCount, sixCount, sevenCount, eightCount, nineCount,
-            aCount, bCount, cCount, dCount, eCount, fCount, gCount, hCount, iCount, jCount, kCount, lCount, mCount, nCount, oCount, pCount, qCount, rCount, sCount, tCount, uCount, vCount, wCount, xCount, yCount, zCount,
-            ACount, BCount, CCount, DCount, ECount, FCount, GCount, HCount, ICount, JCount, KCount, LCount, MCount, NCount, OCount, PCount, QCount, RCount, SCount, TCount, UCount, VCount, WCount, XCount, YCount, ZCount,
-            exCount, atCount, numCount, dolCount, pctCount, ctCount, andCount, astCount, begpCount, endpCount, dshCount, undCount, equlCount, plsCount, begbCount, begcCount, endbCount, endcCount, bksCount, pipCount, smcCount, clnCount, apsCount, qutCount, cmaCount, lstCount, prdCount, grtCount, fwsCount, qmkCount;
-
     public int zeroEnd;
     public int oneEnd;
     public int twoEnd;
@@ -77,36 +71,28 @@ public class DigitCount {
     public int linesProcessed = 0;
     public int linesMatched = 0;
 
-
     public int numOfLines = 45428;
 
-    HashMap<Integer, Integer> countMap = new HashMap();
-    ArrayList<Integer> charCount = new ArrayList<>();
+    HashMap<Character, ArrayList<Integer>> charCounts;
+
+    public DigitCount() {
+        charCounts = new HashMap<>();
+    }
 
     public static void main(String args[]) throws Exception
     {
         //creates an instance of the object and starts the run method
         DigitCount counter = new DigitCount();
-        counter.run();
+        counter.run(args[0]);
     }
 
-    public void run()throws Exception
+    public void run(String filePath)throws Exception
     {
-
+        stringReader(filePath);
         //selects the .txt document to be processed
-
-        stringReader("C:\\Users\\jonat_000\\Documents\\CUPS Stuff\\fullpw_pw.txt");
         //stringMatcher("C:\\Users\\jonat_000\\Documents\\CUPS Stuff\\fullpw_pw.txt", "C:\\Users\\jonat_000\\Documents\\CUPS Stuff\\fullpw_jtr.txt", "C:\\Users\\jonat_000\\Documents\\CUPS Stuff\\fullpw_cond.txt");
         //creates the percent values for the statistics
-        percentify();
-
-
-        for (int i = 32; i<127; i++){
-            int numChars = charCount.get(i);
-            System.out.println((char)i + " " + numChars);
-
-        }
-
+        //percentify();
         //prints out all of the statistics in a semi-readable format
         /*System.out.println("Totals - " + "Zeros: " + zeroCount + ", Ones: " + oneCount + ", Twos: " + twoCount + ", Threes: " + threeCount + ", Fours: " + fourCount + ", Fives: " + fiveCount + ", Sixes: " + sixCount + ", Sevens: " + sevenCount + ", Eights: " + eightCount + ", Nines: " + nineCount);
         System.out.println("Total Percentages - " + "Zeros: " + zeroPercent + "%, Ones: " + onePercent + "%, Twos: " + twoPercent + "%, Threes: " + threePercent + "%, Fours: " + fourPercent + "%, Fives: " + fivePercent + "%, Sixes: " + sixPercent + "%, Sevens: " + sevenPercent + "%, Eights: " + eightPercent + "%, Nines: " + ninePercent + "%");
@@ -119,6 +105,9 @@ public class DigitCount {
 
     public void stringReader (String filePath) throws Exception
     {
+
+
+
         System.out.println("About to start BufferedReader.");
 
         //buffers the lines and hands off the processing for each line to the processLine method
@@ -212,26 +201,36 @@ public class DigitCount {
     public void processLine (String curLine) {
 
         int length = curLine.length();
-        for (int curChar = 32; curChar<127; curChar++){//curChar is the ascii value of the current character
-            int index = curLine.indexOf((char)curChar);
-            while (index >=0) {
-                System.out.println("Found " + (char)curChar + " at " + index);
-                int location = curChar + (127 * index);
-                countMap.put(curChar,  charCount.set(location, charCount.get(location)+1));
+        char curChar;
+        ArrayList<Integer> curCounts;
+        Integer curCount;
 
-
-
-                index = curLine.indexOf((char)curChar, index + 127);
+        for(int i = 0; i < length; i++){
+            curChar = curLine.charAt(i);
+            try {
+                curCounts = charCounts.get(i);
+            } catch (NullPointerException ex) {
+                curCounts = new ArrayList<>();
             }
 
+            try {
+                curCount = curCounts.get(i);
+                curCount++;
+                curCounts.set(i, curCount);
+            } catch (NullPointerException ex) {
+                curCounts.set(i, 1);
+            }
+
+            charCounts.put(curChar, curCounts);
         }
+
         linesProcessed++;
         System.out.println("---------------------------" + linesProcessed);
     }
 
 
 
-    public void percentify()
+    /*public void percentify()
     {
         //turns the totals into a percentage of the number of lines
         zeroPercent = zeroCount;
@@ -335,5 +334,5 @@ public class DigitCount {
         conditionNinePercent = Math.floor(conditionNinePercent * 100) / 100;
         conditionTenPercent = Math.floor(conditionTenPercent * 100) / 100;
         conditionElevenPercent = Math.floor(conditionElevenPercent * 100) / 100;
-    }
+    }*/
 }
