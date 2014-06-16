@@ -1,7 +1,7 @@
 /**
- * Version 1.4 (Now checks the first 10 characters of a password)
+ * Version 1.5 (Now checks the last 10 characters of a password)
  * Created by Jonathan Bees on 6/9/2014
- * Updated by Adam Durity on 6/16/2014
+ * Updated by Jonathan Bees on 6/16/2014
  */
 
 import java.io.BufferedReader;
