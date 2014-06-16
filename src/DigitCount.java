@@ -96,7 +96,43 @@ public class DigitCount {
             }
             System.out.println();
         }
+        System.out.println();
+        System.out.println("Total lines processed: " + linesProcessed);
     }
+
+
+    public void processLine(String curLine) {
+
+        int length = curLine.length();
+        char curChar;
+        TreeMap<Integer, Integer> curCounts;
+        Integer curCount;
+
+        String curLineReverse = new StringBuilder(curLine).reverse().toString();
+
+        for (int i = 0; i < length; i++) {
+            curChar = curLineReverse.charAt(i);
+            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
+
+            if (curCounts == null) {
+                curCounts = new TreeMap<>();
+            }
+
+            curCount = curCounts.get(i);
+
+            if (curCount == null) {
+                curCount = 1;
+            } else {
+                curCount++;
+            }
+
+            curCounts.put(i, curCount);
+            charCounts.put(curChar, curCounts);
+        }
+
+        linesProcessed++;
+    }
+
 
     /*public void stringMatcher (String passwordPath, String crackerPath, String conditionPath) throws Exception
     {
@@ -174,34 +210,4 @@ public class DigitCount {
         crackBr.close();
         condBr.close();
     }*/
-//
-    public void processLine(String curLine) {
-
-        int length = curLine.length();
-        char curChar;
-        TreeMap<Integer, Integer> curCounts;
-        Integer curCount;
-
-        for (int i = 0; i < length; i++) {
-            curChar = curLine.charAt(i);
-            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-
-            if (curCounts == null) {
-                curCounts = new TreeMap<>();
-            }
-
-            curCount = curCounts.get(i);
-
-            if (curCount == null) {
-                curCount = 1;
-            } else {
-                curCount++;
-            }
-
-            curCounts.put(i, curCount);
-            charCounts.put(curChar, curCounts);
-        }
-
-        linesProcessed++;
-    }
 }
