@@ -12,7 +12,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class CharStats {
-    //initializes all of the variables
 
     public int linesProcessed = 0;
 
@@ -23,7 +22,7 @@ public class CharStats {
     }
 
     public static void main(String args[]) throws Exception {
-        //creates an instance of the object and starts the run method
+        //checks for command line arguments, then creates an instance of the object and starts the run method
         CharStats counter = new CharStats();
         try {
             counter.run(args[0], args[1]);
@@ -34,10 +33,12 @@ public class CharStats {
     }
 
     public void run(String filePath) throws Exception{
+        //If only a path is given, don't reverse
         stringReader(filePath, false);
     }
 
     public void run(String filePath, String reverse) throws Exception {
+        //checks if the second argument actually says "reverse"
         if (reverse.toLowerCase().equals("reverse"))
             stringReader(filePath, true);
         else
@@ -59,6 +60,7 @@ public class CharStats {
         br.close();
         System.out.println("Finished reading the file.");
 
+        //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
         FileWriter writer = new FileWriter(filePath + "-Output.csv");
 
         // print out counts
