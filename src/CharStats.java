@@ -11,20 +11,20 @@ import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class DigitCount {
+public class CharStats {
     //initializes all of the variables
 
     public int linesProcessed = 0;
 
     HashMap<Character, SortedMap<Integer, Integer>> charCounts;
 
-    public DigitCount() {
+    public CharStats() {
         charCounts = new HashMap<>();
     }
 
     public static void main(String args[]) throws Exception {
         //creates an instance of the object and starts the run method
-        DigitCount counter = new DigitCount();
+        CharStats counter = new CharStats();
         try {
             counter.run(args[0], args[1]);
         }
