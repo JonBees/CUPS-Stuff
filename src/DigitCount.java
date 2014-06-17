@@ -1,11 +1,12 @@
 /**
- * Version 1.6 (Now checks for all ASCII characters between values 32 and 126, space and tilde)
+ * Version 1.7 (Now exports to CSV)
  * Created by Jonathan Bees on 6/9/2014
  * Updated by Jonathan Bees on 6/17/2014
  */
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -24,14 +25,14 @@ public class DigitCount {
     public static void main(String args[]) throws Exception {
         //creates an instance of the object and starts the run method
         DigitCount counter = new DigitCount();
-        counter.run(args[0]);
+        counter.run(args[0], args[1]);
     }
 
-    public void run(String filePath) throws Exception {
-        stringReader(filePath);
+    public void run(String filePath, String outputFilePath) throws Exception {
+        stringReader(filePath, outputFilePath);
     }
 
-    public void stringReader(String filePath) throws Exception {
+    public void stringReader(String filePath, String outputFilePath) throws Exception {
         int numLines;
         System.out.println("Starting BufferedReader.");
 
@@ -46,42 +47,63 @@ public class DigitCount {
         br.close();
         System.out.println("BufferedReader has finished.");
 
+        FileWriter writer = new FileWriter(outputFilePath);
 
         // print out counts
+        writer.append("Number of characters in each position:");
+        writer.append('\n');
+
         char curChar;
         TreeMap<Integer, Integer> curCounts;
         for (int i = 32; i <= 126; i++) {
             curChar = (char) i;
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-            System.out.format("'%s':", curChar); // make it pretty
+            writer.append('-');
+            writer.append(curChar);
+            writer.append('-');
+            writer.append(',');
+
             for (int pos = 0; pos < 10; pos++) {
                 if (curCounts.containsKey(pos)) {
-                    System.out.format(" %5d", curCounts.get(pos)); // plenty of space
+                    writer.append(curCounts.get(pos).toString());
+                    writer.append(',');
                 }
             }
-            System.out.println();
+            writer.append('\n');
         }
+        writer.flush();
 
-        System.out.println();
-        System.out.println();
 
         // print out percentages
+        writer.append('\n');
+        writer.append("Percent of passwords containing the character in each position:");
+        writer.append('\n');
+
         double pct;
         int curCount;
         for (int i = 32; i <= 126; i++) {
             curChar = (char) i;
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-            System.out.format("'%s':", curChar); // make it pretty
+
+            writer.append('-');
+            writer.append(curChar);
+            writer.append('-');
+            writer.append(',');
+
             for (int pos = 0; pos < 10; pos++) {
                 if (curCounts.containsKey(pos)) {
                     curCount = curCounts.get(pos);
                     pct = (curCount / (double) numLines) * 100;
-                    System.out.format(" %.2f%%", pct); // plenty of space
+                    writer.append(String.valueOf(pct));
+                    writer.append('%');
+                    writer.append(',');
                 }
             }
-            System.out.println();
+            writer.append('\n');
         }
-        System.out.println();
+        writer.flush();
+        writer.close();
+
         System.out.println("Total lines processed: " + linesProcessed);
     }
 
