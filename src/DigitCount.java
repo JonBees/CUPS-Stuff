@@ -25,16 +25,16 @@ public class DigitCount {
     public static void main(String args[]) throws Exception {
         //creates an instance of the object and starts the run method
         DigitCount counter = new DigitCount();
-        counter.run(args[0], args[1]);
+        counter.run(args[0]);
     }
 
-    public void run(String filePath, String outputFilePath) throws Exception {
-        stringReader(filePath, outputFilePath);
+    public void run(String filePath) throws Exception {
+        stringReader(filePath);
     }
 
-    public void stringReader(String filePath, String outputFilePath) throws Exception {
+    public void stringReader(String filePath) throws Exception {
         int numLines;
-        System.out.println("Starting BufferedReader.");
+        System.out.println("Started reading the file.");
 
         //buffers the lines and hands off the processing for each line to the processLine method
         BufferedReader br = new BufferedReader(new FileReader(filePath));
@@ -45,11 +45,13 @@ public class DigitCount {
             numLines++;
         }
         br.close();
-        System.out.println("BufferedReader has finished.");
+        System.out.println("Finished reading the file.");
 
-        FileWriter writer = new FileWriter(outputFilePath);
+        FileWriter writer = new FileWriter(filePath + "-Output.csv");
 
         // print out counts
+        System.out.println("Printing results to: " + filePath + "-Output.csv");
+
         writer.append("Number of characters in each position:");
         writer.append('\n');
 
@@ -118,7 +120,7 @@ public class DigitCount {
         String curLineReverse = new StringBuilder(curLine).reverse().toString();
 
         for (int i = 0; i < length; i++) {
-            curChar = curLine.charAt(i);
+            curChar = curLineReverse.charAt(i);
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
 
             if (curCounts == null) {
