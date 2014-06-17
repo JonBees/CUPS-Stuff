@@ -1,5 +1,5 @@
 /**
- * Version 1.7 (Now exports to CSV)
+ * Version 1.8 (Now reverses based on a command line argument)
  * Created by Jonathan Bees on 6/9/2014
  * Updated by Jonathan Bees on 6/17/2014
  */
@@ -25,14 +25,26 @@ public class DigitCount {
     public static void main(String args[]) throws Exception {
         //creates an instance of the object and starts the run method
         DigitCount counter = new DigitCount();
-        counter.run(args[0]);
+        try {
+            counter.run(args[0], args[1]);
+        }
+        catch (ArrayIndexOutOfBoundsException ex) {
+            counter.run(args[0]);
+        }
     }
 
-    public void run(String filePath) throws Exception {
-        stringReader(filePath);
+    public void run(String filePath) throws Exception{
+        stringReader(filePath, false);
     }
 
-    public void stringReader(String filePath) throws Exception {
+    public void run(String filePath, String reverse) throws Exception {
+        if (reverse.toLowerCase().equals("reverse"))
+            stringReader(filePath, true);
+        else
+            stringReader(filePath, false);
+    }
+
+    public void stringReader(String filePath, Boolean reverse) throws Exception {
         int numLines;
         System.out.println("Started reading the file.");
 
@@ -41,7 +53,7 @@ public class DigitCount {
         String line;
         numLines = 0;
         while ((line = br.readLine()) != null) {
-            processLine(line);
+            processLine(line, reverse);
             numLines++;
         }
         br.close();
@@ -110,17 +122,19 @@ public class DigitCount {
     }
 
 
-    public void processLine(String curLine) {
+    public void processLine(String curLine, boolean reverse) {
 
         int length = curLine.length();
         char curChar;
         TreeMap<Integer, Integer> curCounts;
         Integer curCount;
 
-        String curLineReverse = new StringBuilder(curLine).reverse().toString();
+        if (reverse)
+            curLine = new StringBuilder(curLine).reverse().toString();
 
         for (int i = 0; i < length; i++) {
-            curChar = curLineReverse.charAt(i);
+
+            curChar = curLine.charAt(i);
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
 
             if (curCounts == null) {
