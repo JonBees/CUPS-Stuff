@@ -70,6 +70,7 @@ public class CharStats {
         writer.append('\n');
 
         char curChar;
+        int charTotal;
         TreeMap<Integer, Integer> curCounts;
         for (int i = 32; i <= 126; i++) {
             curChar = (char) i;
@@ -80,11 +81,30 @@ public class CharStats {
             writer.append(',');
 
             for (int pos = 0; pos < 10; pos++) {
+                writer.append(',');
                 if (curCounts.containsKey(pos)) {
                     writer.append(curCounts.get(pos).toString());
-                    writer.append(',');
                 }
             }
+            //finds the total counts for each character and then prints them at the end of the line in the CSV.
+            int charLength = 0;
+            charTotal = 0;
+            for (int pos = 0; curCounts.get(pos) != null; pos++)
+                charLength++;
+            for (int charPos = 0; charPos <= charLength; charPos++){
+                try {
+                    charTotal += curCounts.get(charPos);
+                }
+                catch (NullPointerException ex){
+                    writer.append(',');
+                    writer.append("Total: ");
+                    writer.append(',');
+                    writer.append(Integer.toString(charTotal));
+
+                }
+
+            }
+
             writer.append('\n');
         }
         writer.flush();
