@@ -1,7 +1,7 @@
 /**
- * Version 1.8 (Now reverses based on a command line argument)
+ * Version 1.9 (Now exports to CSV correctly and prints out correct totals)
  * Created by Jonathan Bees on 6/9/2014
- * Updated by Jonathan Bees on 6/17/2014
+ * Updated by Jonathan Bees on 6/20/2014
  */
 
 import java.io.BufferedReader;
@@ -112,9 +112,9 @@ public class CharStats {
 
                 for (int pos = 0; pos < 10; pos++) {
                     if (curCounts.containsKey(pos)) {
-                        csvPrinter.print((curCounts.get(pos) / (double) numLines) * 100);
+                        csvPrinter.print(((curCounts.get(pos) / (double) numLines) * 100) + "%");
                     } else {
-                        csvPrinter.print(0.0);
+                        csvPrinter.print((0.0) + "%");
                     }
                 }
 
@@ -123,7 +123,7 @@ public class CharStats {
                 for (int val : curCounts.values()) {
                     totalCount += val;
                 }
-                csvPrinter.print((totalCount / (double) numLines) * 100);
+                csvPrinter.print(((totalCount / (double) numLines) * 100) + "%");
                 csvPrinter.println();
             }
         }
