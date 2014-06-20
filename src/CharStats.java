@@ -77,23 +77,26 @@ public class CharStats {
         for (int i = 32; i <= 126; i++) {
             curChar = (char) i;
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-            csvPrinter.print(curChar);
 
-            for (int pos = 0; pos < 10; pos++) {
-                if (curCounts.containsKey(pos)) {
-                    csvPrinter.print(curCounts.get(pos));
-                } else {
-                    csvPrinter.print(0);
+            if (curCounts != null) { // curCounts is null if there were no instances of a character
+                csvPrinter.print(curChar);
+
+                for (int pos = 0; pos < 10; pos++) {
+                    if (curCounts.containsKey(pos)) {
+                        csvPrinter.print(curCounts.get(pos));
+                    } else {
+                        csvPrinter.print(0);
+                    }
                 }
-            }
 
-            // find the total count for this character and append to end of CSV record.
-            int totalCount = 0;
-            for (int val : curCounts.values()) {
-                totalCount += val;
+                // find the total count for this character and append to end of CSV record.
+                int totalCount = 0;
+                for (int val : curCounts.values()) {
+                    totalCount += val;
+                }
+                csvPrinter.print(totalCount);
+                csvPrinter.println();
             }
-            csvPrinter.print(totalCount);
-            csvPrinter.println();
         }
         csvPrinter.flush();
 
@@ -104,23 +107,25 @@ public class CharStats {
             curChar = (char) i;
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
 
-            csvPrinter.print(curChar);
+            if (curCounts != null) {
+                csvPrinter.print(curChar);
 
-            for (int pos = 0; pos < 10; pos++) {
-                if (curCounts.containsKey(pos)) {
-                    csvPrinter.print((curCounts.get(pos) / (double) numLines) * 100);
-                } else {
-                    csvPrinter.print(0.0);
+                for (int pos = 0; pos < 10; pos++) {
+                    if (curCounts.containsKey(pos)) {
+                        csvPrinter.print((curCounts.get(pos) / (double) numLines) * 100);
+                    } else {
+                        csvPrinter.print(0.0);
+                    }
                 }
-            }
 
-            // find the total count for this character and append to end of CSV record.
-            int totalCount = 0;
-            for (int val : curCounts.values()) {
-                totalCount += val;
+                // find the total count for this character and append to end of CSV record.
+                int totalCount = 0;
+                for (int val : curCounts.values()) {
+                    totalCount += val;
+                }
+                csvPrinter.print((totalCount / (double) numLines) * 100);
+                csvPrinter.println();
             }
-            csvPrinter.print((totalCount / (double) numLines) * 100);
-            csvPrinter.println();
         }
         csvPrinter.close();
 
