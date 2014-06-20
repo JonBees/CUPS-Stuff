@@ -11,9 +11,10 @@ import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class CharStats {
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
-    public int linesProcessed = 0;
+public class CharStats {
 
     HashMap<Character, SortedMap<Integer, Integer>> charCounts;
 
@@ -46,13 +47,12 @@ public class CharStats {
     }
 
     public void stringReader(String filePath, Boolean reverse) throws Exception {
-        int numLines;
         System.out.println("Started reading the file.");
 
         //buffers the lines and hands off the processing for each line to the processLine method
         BufferedReader br = new BufferedReader(new FileReader(filePath));
         String line;
-        numLines = 0;
+        int numLines = 0;
         while ((line = br.readLine()) != null) {
             processLine(line, reverse);
             numLines++;
@@ -61,91 +61,74 @@ public class CharStats {
         System.out.println("Finished reading the file.");
 
         //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
-        FileWriter writer = new FileWriter(filePath + "-Output.csv");
+        String csvFilePath = filePath + "-Output.csv";
+        CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
+        CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(csvFilePath), csvFormat);
 
         // print out counts
-        System.out.println("Printing results to: " + filePath + "-Output.csv");
+        System.out.format("Printing results to: %s", csvFilePath);
+        System.out.println();
 
-        writer.append("Number of characters in each position:");
-        writer.append('\n');
+        // print out the counts
+        csvPrinter.printComment("Number of characters in each position:");
 
         char curChar;
-        int charTotal;
         TreeMap<Integer, Integer> curCounts;
         for (int i = 32; i <= 126; i++) {
             curChar = (char) i;
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-            writer.append('-');
-            writer.append(curChar);
-            writer.append('-');
-            writer.append(',');
+            csvPrinter.print(curChar);
 
             for (int pos = 0; pos < 10; pos++) {
-                writer.append(',');
                 if (curCounts.containsKey(pos)) {
-                    writer.append(curCounts.get(pos).toString());
+                    csvPrinter.print(curCounts.get(pos));
+                } else {
+                    csvPrinter.print(0);
                 }
             }
-            //finds the total counts for each character and then prints them at the end of the line in the CSV.
-            int charLength = 0;
-            charTotal = 0;
-            for (int pos = 0; curCounts.get(pos) != null; pos++)
-                charLength++;
-            for (int charPos = 0; charPos <= charLength; charPos++){
-                try {
-                    charTotal += curCounts.get(charPos);
-                }
-                catch (NullPointerException ex){
-                    writer.append(',');
-                    writer.append("Total: ");
-                    writer.append(',');
-                    writer.append(Integer.toString(charTotal));
 
-                }
-
+            // find the total count for this character and append to end of CSV record.
+            int totalCount = 0;
+            for (int val : curCounts.values()) {
+                totalCount += val;
             }
-
-            writer.append('\n');
+            csvPrinter.print(totalCount);
+            csvPrinter.println();
         }
-        writer.flush();
-
+        csvPrinter.flush();
 
         // print out percentages
-        writer.append('\n');
-        writer.append("Percent of passwords containing the character in each position:");
-        writer.append('\n');
+        csvPrinter.printComment("Percent of passwords containing the character in each position:");
 
-        double pct;
-        int curCount;
         for (int i = 32; i <= 126; i++) {
             curChar = (char) i;
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
 
-            writer.append('-');
-            writer.append(curChar);
-            writer.append('-');
-            writer.append(',');
+            csvPrinter.print(curChar);
 
             for (int pos = 0; pos < 10; pos++) {
                 if (curCounts.containsKey(pos)) {
-                    curCount = curCounts.get(pos);
-                    pct = (curCount / (double) numLines) * 100;
-                    writer.append(String.valueOf(pct));
-                    writer.append('%');
-                    writer.append(',');
+                    csvPrinter.print((curCounts.get(pos) / (double) numLines) * 100);
+                } else {
+                    csvPrinter.print(0.0);
                 }
             }
-            writer.append('\n');
-        }
-        writer.flush();
-        writer.close();
 
-        System.out.println("Total lines processed: " + linesProcessed);
+            // find the total count for this character and append to end of CSV record.
+            int totalCount = 0;
+            for (int val : curCounts.values()) {
+                totalCount += val;
+            }
+            csvPrinter.print((totalCount / (double) numLines) * 100);
+            csvPrinter.println();
+        }
+        csvPrinter.close();
+
+        System.out.println("Total lines processed: " + numLines);
     }
 
 
     public void processLine(String curLine, boolean reverse) {
-
         int length = curLine.length();
         char curChar;
         TreeMap<Integer, Integer> curCounts;
@@ -174,8 +157,6 @@ public class CharStats {
             curCounts.put(i, curCount);
             charCounts.put(curChar, curCounts);
         }
-
-        linesProcessed++;
     }
 
 }
