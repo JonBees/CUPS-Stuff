@@ -22,7 +22,7 @@ public class CharStats {
     CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
     CSVPrinter csvPrinter;
 
-    Boolean firstHalfDone = false;
+    int status = 0; //Status of 0 is the equivalent of firstHalfDone=false. Status of 1 is the equivalent of firstHalfDone=true. Status of 2 is the password security analysis.
 
     int numLines;
 
@@ -55,9 +55,9 @@ public class CharStats {
         br.close();
         System.out.println("Finished reading the file.");
 
-        if (!firstHalfDone){
+        if (status == 0){
             output(filePath);
-            firstHalfDone = true;
+            status = 1;
             System.out.println("First half done");
             stringReader(filePath);
         }
@@ -69,7 +69,7 @@ public class CharStats {
         TreeMap<Integer, Integer> curCounts;
         Integer curCount;
 
-        if (firstHalfDone)
+        if (status == 1)
             curLine = new StringBuilder(curLine).reverse().toString();
 
         for (int i = 0; i < length; i++) {
@@ -98,7 +98,7 @@ public class CharStats {
     public void output(String filePath) throws Exception{
 
         //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
-        if (!firstHalfDone) {
+        if (status == 0) {
             csvFilePath = filePath + "-Output.csv";
             csvPrinter = new CSVPrinter(new FileWriter(csvFilePath), csvFormat);
         }
@@ -108,7 +108,7 @@ public class CharStats {
         System.out.println();
 
         // print out the counts
-        if (!firstHalfDone)
+        if (status == 0)
             csvPrinter.printComment("Number of characters in each position:");
         else
             csvPrinter.printComment("Number of characters (n) from end");
@@ -131,7 +131,7 @@ public class CharStats {
                 }
 
                 // find the total count for this character and append to end of CSV record.
-                if (firstHalfDone) {
+                if (status == 1) {
                     int totalCount = 0;
                     for (int val : curCounts.values()) {
                         totalCount += val;
@@ -145,7 +145,7 @@ public class CharStats {
         csvPrinter.flush();
 
         // print out percentages
-        if(!firstHalfDone)
+        if(status == 0)
             csvPrinter.printComment("Percent of passwords containing the character in each position:");
         else
             csvPrinter.printComment("Percent of passwords containing the character in each position (n) from end:");
@@ -166,7 +166,7 @@ public class CharStats {
                 }
 
                 // find the total count for this character and append to end of CSV record.
-                if(firstHalfDone) {
+                if(status == 1) {
                     int totalCount = 0;
                     for (int val : curCounts.values()) {
                         totalCount += val;
@@ -177,12 +177,10 @@ public class CharStats {
                     csvPrinter.println();
             }
         }
-        if(firstHalfDone) {
+        if(status == 1) {
             csvPrinter.close();
 
             System.out.println("Total lines processed: " + numLines);
         }
     }
-
-
 }
