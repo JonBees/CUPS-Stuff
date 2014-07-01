@@ -1,7 +1,7 @@
 /**
- * Version 1.9 (Now exports to CSV correctly and prints out correct totals)
+ * Version 1.10 (Now prints both first5 and last5 automagically instead of needing a command line argument and separate runs.)
  * Created by Jonathan Bees on 6/9/2014
- * Updated by Jonathan Bees on 6/20/2014
+ * Updated by Jonathan Bees on 7/1/2014
  */
 
 import java.io.BufferedReader;
@@ -18,6 +18,14 @@ public class CharStats {
 
     HashMap<Character, SortedMap<Integer, Integer>> charCounts;
 
+    String csvFilePath;
+    CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
+    CSVPrinter csvPrinter;
+
+    Boolean firstHalfDone = false;
+
+    int numLines;
+
     public CharStats() {
         charCounts = new HashMap<>();
     }
@@ -25,121 +33,43 @@ public class CharStats {
     public static void main(String args[]) throws Exception {
         //checks for command line arguments, then creates an instance of the object and starts the run method
         CharStats counter = new CharStats();
-        try {
-            counter.run(args[0], args[1]);
-        }
-        catch (ArrayIndexOutOfBoundsException ex) {
-            counter.run(args[0]);
-        }
+        counter.run(args[0]);
     }
 
-    public void run(String filePath) throws Exception{
-        //If only a path is given, don't reverse
-        stringReader(filePath, false);
+    public void run(String filePath) throws Exception {
+        stringReader(filePath);
+        output(filePath);
     }
 
-    public void run(String filePath, String reverse) throws Exception {
-        //checks if the second argument actually says "reverse"
-        if (reverse.toLowerCase().equals("reverse"))
-            stringReader(filePath, true);
-        else
-            stringReader(filePath, false);
-    }
-
-    public void stringReader(String filePath, Boolean reverse) throws Exception {
+    public void stringReader(String filePath) throws Exception {
         System.out.println("Started reading the file.");
 
         //buffers the lines and hands off the processing for each line to the processLine method
         BufferedReader br = new BufferedReader(new FileReader(filePath));
         String line;
-        int numLines = 0;
+        numLines = 0;
         while ((line = br.readLine()) != null) {
-            processLine(line, reverse);
+            processLine(line);
             numLines++;
         }
         br.close();
         System.out.println("Finished reading the file.");
 
-        //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
-        String csvFilePath = filePath + "-Output.csv";
-        CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
-        CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(csvFilePath), csvFormat);
-
-        // print out counts
-        System.out.format("Printing results to: %s", csvFilePath);
-        System.out.println();
-
-        // print out the counts
-        csvPrinter.printComment("Number of characters in each position:");
-
-        char curChar;
-        TreeMap<Integer, Integer> curCounts;
-        for (int i = 32; i <= 126; i++) {
-            curChar = (char) i;
-            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-
-            if (curCounts != null) { // curCounts is null if there were no instances of a character
-                csvPrinter.print(curChar);
-
-                for (int pos = 0; pos < 10; pos++) {
-                    if (curCounts.containsKey(pos)) {
-                        csvPrinter.print(curCounts.get(pos));
-                    } else {
-                        csvPrinter.print(0);
-                    }
-                }
-
-                // find the total count for this character and append to end of CSV record.
-                int totalCount = 0;
-                for (int val : curCounts.values()) {
-                    totalCount += val;
-                }
-                csvPrinter.print(totalCount);
-                csvPrinter.println();
-            }
+        if (!firstHalfDone){
+            output(filePath);
+            firstHalfDone = true;
+            System.out.println("First half done");
+            stringReader(filePath);
         }
-        csvPrinter.flush();
-
-        // print out percentages
-        csvPrinter.printComment("Percent of passwords containing the character in each position:");
-
-        for (int i = 32; i <= 126; i++) {
-            curChar = (char) i;
-            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-
-            if (curCounts != null) {
-                csvPrinter.print(curChar);
-
-                for (int pos = 0; pos < 10; pos++) {
-                    if (curCounts.containsKey(pos)) {
-                        csvPrinter.print(((curCounts.get(pos) / (double) numLines) * 100) + "%");
-                    } else {
-                        csvPrinter.print((0.0) + "%");
-                    }
-                }
-
-                // find the total count for this character and append to end of CSV record.
-                int totalCount = 0;
-                for (int val : curCounts.values()) {
-                    totalCount += val;
-                }
-                csvPrinter.print(((totalCount / (double) numLines) * 100) + "%");
-                csvPrinter.println();
-            }
-        }
-        csvPrinter.close();
-
-        System.out.println("Total lines processed: " + numLines);
     }
 
-
-    public void processLine(String curLine, boolean reverse) {
+    public void processLine(String curLine) {
         int length = curLine.length();
         char curChar;
         TreeMap<Integer, Integer> curCounts;
         Integer curCount;
 
-        if (reverse)
+        if (firstHalfDone)
             curLine = new StringBuilder(curLine).reverse().toString();
 
         for (int i = 0; i < length; i++) {
@@ -163,5 +93,96 @@ public class CharStats {
             charCounts.put(curChar, curCounts);
         }
     }
+
+
+    public void output(String filePath) throws Exception{
+
+        //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
+        if (!firstHalfDone) {
+            csvFilePath = filePath + "-Output.csv";
+            csvPrinter = new CSVPrinter(new FileWriter(csvFilePath), csvFormat);
+        }
+
+        // print out counts
+        System.out.format("Printing results to: %s", csvFilePath);
+        System.out.println();
+
+        // print out the counts
+        if (!firstHalfDone)
+            csvPrinter.printComment("Number of characters in each position:");
+        else
+            csvPrinter.printComment("Number of characters (n) from end");
+
+        char curChar;
+        TreeMap<Integer, Integer> curCounts;
+        for (int i = 32; i <= 126; i++) {
+            curChar = (char) i;
+            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
+
+            if (curCounts != null) { // curCounts is null if there were no instances of a character
+                csvPrinter.print(curChar);
+
+                for (int pos = 0; pos < 5; pos++) {
+                    if (curCounts.containsKey(pos)) {
+                        csvPrinter.print(curCounts.get(pos));
+                    } else {
+                        csvPrinter.print(0);
+                    }
+                }
+
+                // find the total count for this character and append to end of CSV record.
+                if (firstHalfDone) {
+                    int totalCount = 0;
+                    for (int val : curCounts.values()) {
+                        totalCount += val;
+                    }
+                    csvPrinter.print("");
+                    csvPrinter.print(totalCount);
+                }
+                    csvPrinter.println();
+            }
+        }
+        csvPrinter.flush();
+
+        // print out percentages
+        if(!firstHalfDone)
+            csvPrinter.printComment("Percent of passwords containing the character in each position:");
+        else
+            csvPrinter.printComment("Percent of passwords containing the character in each position (n) from end:");
+
+        for (int i = 32; i <= 126; i++) {
+            curChar = (char) i;
+            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
+
+            if (curCounts != null) {
+                csvPrinter.print(curChar);
+
+                for (int pos = 0; pos < 5; pos++) {
+                    if (curCounts.containsKey(pos)) {
+                        csvPrinter.print(((curCounts.get(pos) / (double) numLines) * 100) + "%");
+                    } else {
+                        csvPrinter.print((0.0) + "%");
+                    }
+                }
+
+                // find the total count for this character and append to end of CSV record.
+                if(firstHalfDone) {
+                    int totalCount = 0;
+                    for (int val : curCounts.values()) {
+                        totalCount += val;
+                    }
+                    csvPrinter.print("");
+                    csvPrinter.print(((totalCount / (double) numLines) * 100) + "%");
+                }
+                    csvPrinter.println();
+            }
+        }
+        if(firstHalfDone) {
+            csvPrinter.close();
+
+            System.out.println("Total lines processed: " + numLines);
+        }
+    }
+
 
 }
