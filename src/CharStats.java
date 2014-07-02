@@ -49,7 +49,13 @@ public class CharStats {
         String line;
         numLines = 0;
         while ((line = br.readLine()) != null) {
-            processLine(line);
+            if(status == 1 || status == 2) {
+                processLine(line);
+            }
+            if(status == 2){
+                checkPasswordStrength(line, filePath);
+                //System.out.println("checking line " + numLines);
+            }
             numLines++;
         }
         br.close();
@@ -59,7 +65,12 @@ public class CharStats {
             output(filePath);
             status = 1;
             System.out.println("First half done");
+            charCounts.clear();
             stringReader(filePath);
+        }
+        if (status == 2) {
+            csvPrinter.close();
+            status = 3;
         }
     }
 
@@ -179,8 +190,52 @@ public class CharStats {
         }
         if(status == 1) {
             csvPrinter.close();
-
             System.out.println("Total lines processed: " + numLines);
+            status = 2;
+            stringReader(filePath);
         }
+    }
+
+    public void checkPasswordStrength (String curLine, String filePath) throws Exception{
+
+        if(numLines == 0) {
+            csvFilePath = filePath + "-PasswordStrength.csv";
+            csvPrinter = new CSVPrinter(new FileWriter(csvFilePath), csvFormat);
+        }
+
+        boolean reverse = false;
+        int length = curLine.length();
+        char curChar;
+        TreeMap<Integer, Integer> curCounts;
+        double linePct = 0;
+
+        if (reverse)
+            curLine = new StringBuilder(curLine).reverse().toString();
+
+        for (int i = 0; i < length; i++) {
+
+            linePct = 0;
+            curChar = curLine.charAt(i);
+            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
+
+            for (int pos = 0; pos < 5; pos++) {
+                if (curCounts.containsKey(pos)) {
+                    double charPct = (curCounts.get(pos) / (double) numLines) * 100;
+                    charPct = 1/charPct;
+                    linePct += charPct;
+                }
+            }
+        }
+        csvPrinter.print("Line score for first 5 in line " + numLines + ": ");
+        csvPrinter.print(linePct);
+        csvPrinter.print(curLine);
+        csvPrinter.println();
+        //System.out.println("Printing out line score");
+        //check each character for percentage frequency in that position
+
+        //take 1/that percentage and add it together with the other fractions so far.
+
+        //somehow output the line and its strength
+
     }
 }
