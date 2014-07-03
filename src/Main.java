@@ -1,13 +1,17 @@
 /**
  * Version 1.12 (Now modularized.)
  * Created by Jonathan Bees on 6/9/2014
- * Updated by Jonathan Bees on 7/2/2014
+ * Updated by Jonathan Bees on 7/3/2014
  */
 
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class Main {
@@ -16,12 +20,15 @@ public class Main {
     String csvFilePath;
     CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
     CSVPrinter csvPrinter;
+    ArrayList<String> passwords = new ArrayList<>();
+
 
     public static void main(String args[]) throws Exception {
         //checks for command line arguments, then creates an instance of the object and starts the run method
-        CharStats counter = new CharStats();
+        Main main = new Main();
         filePath = args[0];
-        counter.run(filePath);
+
+        main.run(filePath);
 
         // 1. Read the list of passwords
         // 2. Compute the char-position stats of the passwords
@@ -36,6 +43,31 @@ public class Main {
         //
     }
 
+    public void run(String filePath) throws Exception{
+        CharStats counter = new CharStats();
+
+        stringReader(filePath);
+        counter.run(passwords);
+    }
+
+    public void stringReader(String filePath) throws Exception {
+        System.out.println("Started reading the file.");
+
+        //buffers the lines and hands off the processing for each line to the processLine method
+        BufferedReader br = new BufferedReader(new FileReader(filePath));
+        String line;
+
+        int numLines = 0;
+
+        while ((line = br.readLine()) != null) {
+            passwords.add(line);
+            numLines++;
+        }
+        br.close();
+        System.out.println("Finished reading the file. There were " + numLines + " lines.");
+
+    }
+
     public void output() throws Exception{
 
         //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
@@ -47,9 +79,9 @@ public class Main {
         System.out.println();
 
         // print out the counts
-        if (status == 2)
+
             csvPrinter.printComment("Number of characters in each position:");
-        if (status == 4)
+
             csvPrinter.printComment("Number of characters (n) from end");
 
         char curChar;
@@ -117,6 +149,4 @@ public class Main {
             }
         }
     }
-
-
 }

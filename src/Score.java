@@ -15,18 +15,18 @@ public class Score {
 
     String csvFilePath;
     CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
+    CSVPrinter csvPrinter;
+
 
 
     public void checkPasswordStrength (String filePath, String curLine, int curLineNum) throws Exception{
 
             csvFilePath = filePath + "-PasswordStrength.csv";
             csvPrinter = new CSVPrinter(new FileWriter(csvFilePath), csvFormat);
+
             System.out.format("Printing password scores to: %s", csvFilePath);
             System.out.println();
 
-
-        if (status == 4)
-            curLine = new StringBuilder(curLine).reverse().toString();
 
         char curChar;
         TreeMap<Integer, Integer> curCounts;

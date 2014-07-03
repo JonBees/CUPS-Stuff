@@ -5,45 +5,40 @@
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class CharStats {
 
-    HashMap<Character, SortedMap<Integer, Integer>> charCounts;
+    boolean reverse = false;
 
-    int numLines;
+    public HashMap<Character, SortedMap<Integer, Integer>> charCounts, charCountsReverse;
 
     public CharStats() {
         charCounts = new HashMap<>();
+        charCountsReverse = new HashMap<>();
     }
 
-    public void run(String filePath) throws Exception {
-        stringReader(filePath);
+    public void run(ArrayList<String> passwords) throws Exception{
+        stringReader(passwords);
     }
 
-    public void stringReader(String filePath) throws Exception {
+    public void stringReader(ArrayList<String> passwords) throws Exception {
         System.out.println("Started reading the file.");
 
-        //buffers the lines and hands off the processing for each line to the processLine method
-        BufferedReader br = new BufferedReader(new FileReader(filePath));
-        String line;
-
-        numLines = 0;
-
-        while ((line = br.readLine()) != null) {
-            if(reverse) {
-                line = new StringBuilder(line).reverse().toString();
+            //reads each line from the array and passes it to the processLine method
+        for (int i = 0; i < passwords.size(); i++) {
+            String line = passwords.get(i);
                 processLine(line); //sends the line to processLine if we want to check the character frequency
-            }
-            else
-                processLine(line);
-
-            numLines++;
         }
-        br.close();
+
         System.out.println("Finished reading the file.");
+        if(!reverse){
+            reverse = true;
+            stringReader(passwords);
+        }
     }
 
     public void processLine(String curLine) {
@@ -51,6 +46,9 @@ public class CharStats {
         char curChar;
         TreeMap<Integer, Integer> curCounts;
         Integer curCount;
+
+        if(reverse)
+            curLine = new StringBuilder(curLine).reverse().toString();
 
         for (int i = 0; i < length; i++) {
 
@@ -70,7 +68,10 @@ public class CharStats {
             }
 
             curCounts.put(i, curCount);
-            charCounts.put(curChar, curCounts);
+            if(!reverse)
+                charCounts.put(curChar, curCounts);
+            else
+                charCountsReverse.put(curChar, curCounts);
         }
     }
 }
