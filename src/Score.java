@@ -34,7 +34,7 @@ public class Score {
 
         for (int i = 0; i < 5; i++) {
             curChar = curLine.charAt(i);
-            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
+            curCounts = (TreeMap<Integer, Integer>) CharStats.charCounts.get(curChar);
 
             double charPct = (curCounts.get(i) / (double) numLines) * 100;
             charPct = 1/charPct;

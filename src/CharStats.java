@@ -3,8 +3,6 @@
  */
 
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.SortedMap;
@@ -73,5 +71,14 @@ public class CharStats {
             else
                 charCountsReverse.put(curChar, curCounts);
         }
+    }
+
+    public int getPct (HashMap choice, int character, int location){
+        TreeMap <Integer, Integer> curCounts = new TreeMap<>();
+        if (choice.get(character) != null)
+            curCounts = (TreeMap<Integer, Integer>) choice.get(character);
+        else
+            System.out.println("The value in HashMap " + choice + ": Character " + character + ", Location " + location + " was unavailable.");
+        return curCounts.get(location);
     }
 }
