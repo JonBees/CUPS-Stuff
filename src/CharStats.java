@@ -11,7 +11,6 @@ import java.util.TreeMap;
 public class CharStats {
 
     boolean reverse = false;
-
     public HashMap<Character, SortedMap<Integer, Integer>> charCounts, charCountsReverse;
 
     public CharStats() {
@@ -24,15 +23,15 @@ public class CharStats {
     }
 
     public void stringReader(ArrayList<String> passwords) throws Exception {
-        System.out.println("Started reading the file.");
+        System.out.println("Started reading the ArrayList.");
 
             //reads each line from the array and passes it to the processLine method
         for (int i = 0; i < passwords.size(); i++) {
             String line = passwords.get(i);
-                processLine(line); //sends the line to processLine if we want to check the character frequency
+            processLine(line); //sends the line to processLine if we want to check the character frequency
         }
 
-        System.out.println("Finished reading the file.");
+        System.out.println("Finished reading the ArrayList.");
         if(!reverse){
             reverse = true;
             stringReader(passwords);
@@ -73,12 +72,31 @@ public class CharStats {
         }
     }
 
-    public int getPct (HashMap choice, int character, int location){
+    public double getPctForward (char ch, int pos){
+        TreeMap <Integer, Integer> curCounts;
+        double pct;
+        if (charCounts.get(ch) != null) {
+            curCounts = (TreeMap<Integer, Integer>) charCounts.get(ch);
+            for (int i = 0; i < 5; i++) {
+                if (curCounts.containsKey(pos)) {
+                    pct = ((curCounts.get(pos) / (double) Main.getNumLines()) * 100);
+                } else {
+                    pct = (0.0);
+                }
+            }
+        }
+        else {
+            System.out.println("The value in charCounts, character " + ch + ", position " + pos + " doesn't exist.");
+            pct = 0;
+        }
+        return pct;
+    }
+    public double getPctReverse (char ch, int pos){
         TreeMap <Integer, Integer> curCounts = new TreeMap<>();
-        if (choice.get(character) != null)
-            curCounts = (TreeMap<Integer, Integer>) choice.get(character);
+        if (charCountsReverse.get(ch) != null)
+            curCounts = (TreeMap<Integer, Integer>) charCountsReverse.get(ch);
         else
-            System.out.println("The value in HashMap " + choice + ": Character " + character + ", Location " + location + " was unavailable.");
-        return curCounts.get(location);
+            System.out.println("The value in charCountsReverse, character " + ch + ", position " + pos + " doesn't exist.");
+        return curCounts.get(pos);
     }
 }

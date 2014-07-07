@@ -21,7 +21,7 @@ public class Main {
     CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
     CSVPrinter csvPrinter;
     ArrayList<String> passwords = new ArrayList<>();
-
+    static int numLines = 0;
 
     public static void main(String args[]) throws Exception {
         //checks for command line arguments, then creates an instance of the object and starts the run method
@@ -57,8 +57,6 @@ public class Main {
         BufferedReader br = new BufferedReader(new FileReader(filePath));
         String line;
 
-        int numLines = 0;
-
         while ((line = br.readLine()) != null) {
             passwords.add(line);
             numLines++;
@@ -66,6 +64,10 @@ public class Main {
         br.close();
         System.out.println("Finished reading the file. There were " + numLines + " lines.");
 
+    }
+
+    public static int getNumLines (){
+        return numLines;
     }
 
     public void output() throws Exception{
