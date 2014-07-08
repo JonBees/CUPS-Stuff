@@ -1,7 +1,7 @@
 /**
  * Version 1.12 (Now modularized.)
  * Created by Jonathan Bees on 6/9/2014
- * Updated by Jonathan Bees on 7/3/2014
+ * Updated by Jonathan Bees on 7/8/2014
  */
 
 
@@ -12,16 +12,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.TreeMap;
 
 public class Main {
 
     static String filePath;
-    String csvFilePath;
-    CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
-    CSVPrinter csvPrinter;
     ArrayList<String> passwords = new ArrayList<>();
     static int numLines = 0;
+
+    CharStats counter = new CharStats();
+    Score score = new Score();
 
     public static void main(String args[]) throws Exception {
         //checks for command line arguments, then creates an instance of the object and starts the run method
@@ -40,14 +39,14 @@ public class Main {
         // StatsScorer scorer = new StatsScorer(charStats)
         // Iterate over password list to get score - scorer.score(<password>)
         // Format output for console/CSV
-        //
     }
 
     public void run(String filePath) throws Exception{
-        CharStats counter = new CharStats();
 
         stringReader(filePath);
         counter.run(passwords);
+        score.compileScores(passwords);
+        output();
     }
 
     public void stringReader(String filePath) throws Exception {
@@ -72,83 +71,51 @@ public class Main {
 
     public void output() throws Exception{
 
+        String statsFilePath = filePath + "-Stats.csv";
+        String scoreFilePath = filePath + "-Score.csv";
+        CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
+        CSVPrinter csvPrinter;
+
         //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
-        csvFilePath = filePath + "-Output.csv";
-        csvPrinter = new CSVPrinter(new FileWriter(csvFilePath), csvFormat);
+        csvPrinter = new CSVPrinter(new FileWriter(statsFilePath), csvFormat);
 
         // print out the location of the CSV
-        System.out.format("Printing character stats to: %s", csvFilePath);
-        System.out.println();
+        System.out.println("Printing character stats to: " + statsFilePath);
+        System.out.println("Printing password scores to: " + scoreFilePath);
 
+        ArrayList scores = score.getScores();
         // print out the counts
 
-            csvPrinter.printComment("Number of characters in each position:");
+        /*csvPrinter.printComment("Percent of passwords containing the character in each position:");
+        csvPrinter.printComment("Percent of passwords containing the character (n) from end");*/
 
-            csvPrinter.printComment("Number of characters (n) from end");
-
-        char curChar;
-        TreeMap<Integer, Integer> curCounts;
         for (int i = 32; i <= 126; i++) {
-            curChar = (char) i;
-            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
+            char curChar = (char) i;
 
-            if (curCounts != null) { // curCounts is null if there were no instances of a character
+            if (counter.charCheck(curChar)) {
                 csvPrinter.print(curChar);
 
                 for (int pos = 0; pos < 5; pos++) {
-                    if (curCounts.containsKey(pos)) {
-                        csvPrinter.print(curCounts.get(pos));
-                    } else {
-                        csvPrinter.print(0);
-                    }
+                   csvPrinter.print(counter.getPctForward(curChar, pos) + '%');
                 }
-
-                // find the total count for this character and append to end of CSV record.
-                if (status == 2) {
-                    int totalCount = 0;
-                    for (int val : curCounts.values()) {
-                        totalCount += val;
-                    }
-                    csvPrinter.print("");
-                    csvPrinter.print(totalCount);
-                }
-                csvPrinter.println();
-            }
-        }
-        csvPrinter.flush();
-
-        // print out percentages
-        if (status == 2)
-            csvPrinter.printComment("Percent of passwords containing the character in each position:");
-        if (status == 4)
-            csvPrinter.printComment("Percent of passwords containing the character in each position (n) from end:");
-
-        for (int i = 32; i <= 126; i++) {
-            curChar = (char) i;
-            curCounts = (TreeMap<Integer, Integer>) charCounts.get(curChar);
-
-            if (curCounts != null) {
-                csvPrinter.print(curChar);
-
+                csvPrinter.print("");
                 for (int pos = 0; pos < 5; pos++) {
-                    if (curCounts.containsKey(pos)) {
-                        csvPrinter.print(((curCounts.get(pos) / (double) numLines) * 100) + "%");
-                    } else {
-                        csvPrinter.print((0.0) + "%");
-                    }
+                    csvPrinter.print(counter.getPctReverse(curChar, pos) + '%');
                 }
-
-                // find the total count for this character and append to end of CSV record.
-                if(status == 2) {
-                    int totalCount = 0;
-                    for (int val : curCounts.values()) {
-                        totalCount += val;
-                    }
-                    csvPrinter.print("");
-                    csvPrinter.print(((totalCount / (double) numLines) * 100) + "%");
-                }
-                csvPrinter.println();
+                    csvPrinter.println();
             }
         }
+        csvPrinter.close();
+
+        csvPrinter = new CSVPrinter(new FileWriter(scoreFilePath), csvFormat);
+
+        for (int i = 0; i < passwords.size(); i++) {
+            csvPrinter.print(i);
+            csvPrinter.print(passwords.get(i));
+            csvPrinter.print(scores.get(i));
+            csvPrinter.println();
+        }
+        csvPrinter.close();
+
     }
 }

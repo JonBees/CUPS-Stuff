@@ -1,5 +1,5 @@
 /**
- * Updated by Jonathan Bees on 7/2/2014.
+ * Updated by Jonathan Bees on 7/8/2014.
  */
 
 
@@ -77,26 +77,39 @@ public class CharStats {
         double pct;
         if (charCounts.get(ch) != null) {
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(ch);
-            for (int i = 0; i < 5; i++) {
                 if (curCounts.containsKey(pos)) {
                     pct = ((curCounts.get(pos) / (double) Main.getNumLines()) * 100);
                 } else {
                     pct = (0.0);
-                }
             }
         }
         else {
             System.out.println("The value in charCounts, character " + ch + ", position " + pos + " doesn't exist.");
-            pct = 0;
+            pct = 0.0;
         }
         return pct;
     }
     public double getPctReverse (char ch, int pos){
-        TreeMap <Integer, Integer> curCounts = new TreeMap<>();
-        if (charCountsReverse.get(ch) != null)
-            curCounts = (TreeMap<Integer, Integer>) charCountsReverse.get(ch);
-        else
+        TreeMap <Integer, Integer> curCounts;
+        double pct;
+        if (charCounts.get(ch) != null) {
+            curCounts = (TreeMap<Integer, Integer>) charCounts.get(ch);
+            if (curCounts.containsKey(pos)) {
+                pct = ((curCounts.get(pos) / (double) Main.getNumLines()) * 100);
+            } else {
+                pct = (0.0);
+            }
+        }
+        else {
             System.out.println("The value in charCountsReverse, character " + ch + ", position " + pos + " doesn't exist.");
-        return curCounts.get(pos);
+            pct = 0.0;
+        }
+        return pct;
+    }
+    public boolean charCheck (char ch){
+        boolean exists = false;
+        if (charCounts.get(ch) != null)
+            exists = true;
+        return exists;
     }
 }
