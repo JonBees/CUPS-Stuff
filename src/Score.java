@@ -20,7 +20,7 @@ public class Score {
             double charScore = 1 / charStats.getPctForward(curChar, i);
             lineScore += charScore;
         }
-        for (int i = curLine.length(); i > curLine.length() - 5; i--) {
+        for (int i = curLine.length()-1; i > curLine.length() - 6; i--) {
             curChar = curLine.charAt(i);
             double charScore = 1 / charStats.getPctReverse(curChar, i);
             lineScore += charScore;
