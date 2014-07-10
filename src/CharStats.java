@@ -10,6 +10,9 @@ import java.util.TreeMap;
 
 public class CharStats {
 
+    int forwardGotten;
+    int reverseGotten;
+
     boolean reverse = false;
     public HashMap<Character, SortedMap<Integer, Integer>> charCounts, charCountsReverse;
 
@@ -28,14 +31,15 @@ public class CharStats {
             //reads each line from the array and passes it to the processLine method
         for (int i = 0; i < passwords.size(); i++) {
             String line = passwords.get(i);
-            processLine(line); //sends the line to processLine if we want to check the character frequency
+            processLine(line); //sends the line to processLine
         }
 
-        System.out.println("Finished reading the ArrayList.");
         if(!reverse){
             reverse = true;
+            System.out.println("Finished reading the ArrayList forwards.");
             stringReader(passwords);
         }
+        System.out.println("Finished reading the ArrayList reversed.");
     }
 
     public void processLine(String curLine) {
@@ -77,6 +81,7 @@ public class CharStats {
         double pct;
         if (charCounts.get(ch) != null) {
             curCounts = (TreeMap<Integer, Integer>) charCounts.get(ch);
+            forwardGotten++;
                 if (curCounts.containsKey(pos)) {
                     pct = ((curCounts.get(pos) / (double) Main.getNumLines()) * 100);
                 } else {
@@ -92,8 +97,9 @@ public class CharStats {
     public double getPctReverse (char ch, int pos){
         TreeMap <Integer, Integer> curCounts;
         double pct;
-        if (charCounts.get(ch) != null) {
-            curCounts = (TreeMap<Integer, Integer>) charCounts.get(ch);
+        if (charCountsReverse.get(ch) != null) {
+            curCounts = (TreeMap<Integer, Integer>) charCountsReverse.get(ch);
+            reverseGotten++;
             if (curCounts.containsKey(pos)) {
                 pct = ((curCounts.get(pos) / (double) Main.getNumLines()) * 100);
             } else {
@@ -111,5 +117,9 @@ public class CharStats {
         if (charCounts.get(ch) != null)
             exists = true;
         return exists;
+    }
+    public void gottenCheck(){
+       System.out.println("forwardGotten: " + forwardGotten);
+       System.out.println("reverseGotten: " + reverseGotten);
     }
 }

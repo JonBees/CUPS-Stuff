@@ -27,7 +27,7 @@ public class Main {
         Main main = new Main();
         filePath = args[0];
 
-        main.run(filePath);
+        main.run();
 
         // 1. Read the list of passwords
         // 2. Compute the char-position stats of the passwords
@@ -41,12 +41,13 @@ public class Main {
         // Format output for console/CSV
     }
 
-    public void run(String filePath) throws Exception{
+    public void run() throws Exception{
 
         stringReader(filePath);
         counter.run(passwords);
         score.compileScores(passwords);
         output();
+        counter.gottenCheck();
     }
 
     public void stringReader(String filePath) throws Exception {
