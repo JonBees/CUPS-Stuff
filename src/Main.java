@@ -1,122 +1,112 @@
 /**
  * Version 1.12 (Now modularized.)
  * Created by Jonathan Bees on 6/9/2014
- * Updated by Jonathan Bees on 7/8/2014
+ * Updated by Adam Durity on 7/14/2014
  */
 
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 public class Main {
 
-    static String filePath;
-    ArrayList<String> passwords = new ArrayList<>();
-    static int numLines = 0;
-
-    CharStats counter = new CharStats();
-    Score score = new Score();
+    static CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
 
     public static void main(String args[]) throws Exception {
-        //checks for command line arguments, then creates an instance of the object and starts the run method
-        Main main = new Main();
-        filePath = args[0];
+        String filePath = "";
+        List<String> passwords;
 
-        main.run();
+        try {
+            filePath = args[0];
+        } catch(IndexOutOfBoundsException ex) {
+            System.err.println("Please specify a password data file.");
+            System.exit(1);
+        }
 
-        // 1. Read the list of passwords
-        // 2. Compute the char-position stats of the passwords
-        // 3. Use computed statistics to score passwords
-        // 4. Output statistics and scores
-        //
-        // Load passwords into ArrayList<String>
-        // CharStats charStats = new CharStats(<list of passwords>)
-        // StatsScorer scorer = new StatsScorer(charStats)
-        // Iterate over password list to get score - scorer.score(<password>)
-        // Format output for console/CSV
-    }
-
-    public void run() throws Exception{
-
-        stringReader(filePath);
-        counter.run(passwords);
-        score.compileScores(passwords);
-        output();
-        counter.gottenCheck();
-    }
-
-    public void stringReader(String filePath) throws Exception {
-        System.out.println("Started reading the file.");
-
-        //buffers the lines and hands off the processing for each line to the processLine method
+        // Read the list of passwords
         BufferedReader br = new BufferedReader(new FileReader(filePath));
-        String line;
+        passwords = Arrays.asList(br.lines().toArray(String[]::new));
 
-        while ((line = br.readLine()) != null) {
-            passwords.add(line);
-            numLines++;
-        }
-        br.close();
-        System.out.println("Finished reading the file. There were " + numLines + " lines.");
+        // Compute the character-position statistics of the passwords and output
+        CharStats charStats = new CharStats(passwords);
+        String charCountsFilePath = filePath + "-counts.csv";
+        outputCharCounts(charCountsFilePath, charStats);
+        String charWeightsFilePath = filePath + "-weights.csv";
+        outputCharWeights(charWeightsFilePath, charStats);
 
+        // Score list of passwords and output
+        Scorer scorer = new Scorer(charStats);
+        String scoresFilePath = filePath + "-scores.csv";
+        outputScores(scoresFilePath, scorer, passwords);
     }
 
-    public static int getNumLines (){
-        return numLines;
-    }
+    public static void outputCharCounts(String filePath, CharStats charStats) throws IOException {
+        CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(filePath), csvFormat);
 
-    public void output() throws Exception{
+        for (char c = ' '; c <= '~'; c++) {
+            csvPrinter.print(String.format("'%s'", c));
 
-        String statsFilePath = filePath + "-Stats.csv";
-        String scoreFilePath = filePath + "-Score.csv";
-        CSVFormat csvFormat = CSVFormat.EXCEL.withCommentStart(' ');
-        CSVPrinter csvPrinter;
-
-        //Initializes the FileWriter class, which sends an output file to the same directory with the same name appended by -Output.csv
-        csvPrinter = new CSVPrinter(new FileWriter(statsFilePath), csvFormat);
-
-        // print out the location of the CSV
-        System.out.println("Printing character stats to: " + statsFilePath);
-        System.out.println("Printing password scores to: " + scoreFilePath);
-
-        ArrayList scores = score.getScores();
-        // print out the counts
-
-        /*csvPrinter.printComment("Percent of passwords containing the character in each position:");
-        csvPrinter.printComment("Percent of passwords containing the character (n) from end");*/
-
-        for (int i = 32; i <= 126; i++) {
-            char curChar = (char) i;
-
-            if (counter.charCheck(curChar)) {
-                csvPrinter.print(curChar);
-
-                for (int pos = 0; pos < 5; pos++) {
-                   csvPrinter.print(counter.getPctForward(curChar, pos) + '%');
-                }
-                csvPrinter.print("");
-                for (int pos = 0; pos < 5; pos++) {
-                    csvPrinter.print(counter.getPctReverse(curChar, pos) + '%');
-                }
-                    csvPrinter.println();
+            // print forward position counts
+            for (int pos = 0; pos < 5; pos++) {
+                csvPrinter.print(String.format("%d", charStats.getForwardCount(c, pos)));
             }
-        }
-        csvPrinter.close();
 
-        csvPrinter = new CSVPrinter(new FileWriter(scoreFilePath), csvFormat);
+            csvPrinter.print(""); // total count (empty for now)
 
-        for (int i = 0; i < passwords.size(); i++) {
-            csvPrinter.print(i);
-            csvPrinter.print(passwords.get(i));
-            csvPrinter.print(scores.get(i));
+            // print reverse position counts
+            for (int pos = 0; pos < 5; pos++) {
+                csvPrinter.print(String.format("%d", charStats.getReverseCount(c, pos)));
+            }
+
             csvPrinter.println();
         }
-        csvPrinter.close();
 
+        csvPrinter.close();
+        System.out.format("Character counts written to %s\n", filePath);
+    }
+
+    public static void outputCharWeights(String filePath, CharStats charStats) throws IOException {
+        CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(filePath), csvFormat);
+
+        for (char c = ' '; c <= '~'; c++) {
+            csvPrinter.print(String.format("'%s'", c));
+
+            // print forward position counts
+            for (int pos = 0; pos < 5; pos++) {
+                csvPrinter.print(String.format("%.3f", charStats.getForwardWeight(c, pos)));
+            }
+
+            csvPrinter.print(""); // total weight (empty for now)
+
+            // print reverse position counts
+            for (int pos = 4; pos >= 0; pos--) {
+                csvPrinter.print(String.format("%.3f", charStats.getReverseWeight(c, pos)));
+            }
+
+            csvPrinter.println();
+        }
+
+        csvPrinter.close();
+        System.out.format("Character weights written to %s\n", filePath);
+    }
+
+    public static void outputScores(String filePath, Scorer scorer, List<String> passwords) throws IOException {
+        CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(filePath), csvFormat);
+
+        for (String password : passwords) {
+            csvPrinter.print(String.format("%s", password));
+            csvPrinter.print(String.format("%.2f", scorer.score(password)));
+            csvPrinter.println();
+        }
+
+        csvPrinter.close();
+        System.out.format("Password scores written to %s\n", filePath);
     }
 }
