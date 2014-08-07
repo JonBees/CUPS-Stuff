@@ -1,7 +1,7 @@
 /**
- * Version 1.12 (Now modularized.)
+ * Version 1.13 (Now dumps arrays to -dump.txt if supplied the -dump argument)
  * Created by Jonathan Bees on 6/9/2014
- * Updated by Adam Durity on 7/14/2014
+ * Updated by Jonathan Bees on 8/7/2014
  */
 
 
@@ -22,11 +22,14 @@ public class Main {
     public static void main(String args[]) throws Exception {
         String filePath = "";
         List<String> passwords;
+        boolean dump = false;
 
         try {
             filePath = args[0];
+            if (args[1].toLowerCase().equals("dump"))
+                dump = true;
         } catch(IndexOutOfBoundsException ex) {
-            System.err.println("Please specify a password data file.");
+            System.err.println("Usage: <filepath> [mode]");
             System.exit(1);
         }
 
@@ -36,15 +39,23 @@ public class Main {
 
         // Compute the character-position statistics of the passwords and output
         CharStats charStats = new CharStats(passwords);
-        String charCountsFilePath = filePath + "-counts.csv";
-        outputCharCounts(charCountsFilePath, charStats);
-        String charWeightsFilePath = filePath + "-weights.csv";
-        outputCharWeights(charWeightsFilePath, charStats);
+        if(!dump) {
+            String charCountsFilePath = filePath + "-counts.csv";
+            outputCharCounts(charCountsFilePath, charStats);
+            String charWeightsFilePath = filePath + "-weights.csv";
+            outputCharWeights(charWeightsFilePath, charStats);
 
-        // Score list of passwords and output
-        Scorer scorer = new Scorer(charStats);
-        String scoresFilePath = filePath + "-scores.csv";
-        outputScores(scoresFilePath, scorer, passwords);
+            // Score list of passwords and output
+            Scorer scorer = new Scorer(charStats);
+            String scoresFilePath = filePath + "-scores.csv";
+            outputScores(scoresFilePath, scorer, passwords);
+        }
+
+        // Dump the weight arrays to a file
+        else {
+            String dumpFilePath = filePath + "-arrays.txt";
+            dumpArray(dumpFilePath, charStats);
+        }
     }
 
     public static void outputCharCounts(String filePath, CharStats charStats) throws IOException {
@@ -78,14 +89,14 @@ public class Main {
         for (char c = ' '; c <= '~'; c++) {
             csvPrinter.print(String.format("'%s'", c));
 
-            // print forward position counts
+            // print forward position weights
             for (int pos = 0; pos < 5; pos++) {
                 csvPrinter.print(String.format("%.3f", charStats.getForwardWeight(c, pos)));
             }
 
             csvPrinter.print(""); // total weight (empty for now)
 
-            // print reverse position counts
+            // print reverse position weights
             for (int pos = 4; pos >= 0; pos--) {
                 csvPrinter.print(String.format("%.3f", charStats.getReverseWeight(c, pos)));
             }
@@ -108,5 +119,43 @@ public class Main {
 
         csvPrinter.close();
         System.out.format("Password scores written to %s\n", filePath);
+    }
+    public static void dumpArray(String filePath, CharStats charStats) throws IOException{
+        FileWriter fileWriter = new FileWriter(filePath);
+
+        fileWriter.append("charFreqs =");
+        fileWriter.append("\n");
+        for (char c = ' '; c <= '~'; c++) {
+           fileWriter.append("  ");
+           fileWriter.append(String.format("'%s'", c) + ": [");
+
+           // print forward position weights
+           for (int pos = 0; pos < 5; pos++) {
+               fileWriter.append(String.format("%.3f", charStats.getForwardWeight(c, pos)));
+               if(pos < 4)
+                   fileWriter.append(", ");
+           }
+
+           fileWriter.append("]" + "\n");
+        }
+
+        fileWriter.append("charFreqsReverse =");
+        fileWriter.append("\n");
+        for (char c = ' '; c <= '~'; c++){
+            fileWriter.append("  ");
+            fileWriter.append(String.format("'%s'", c) + ": [");
+
+            // print reverse position weights
+            for (int pos = 4; pos >= 0; pos--) {
+                fileWriter.append(String.format("%.3f", charStats.getReverseWeight(c, pos)));
+                if(pos >= 1)
+                    fileWriter.append(", ");
+            }
+
+            fileWriter.append("]" + "\n");
+        }
+
+        fileWriter.close();
+        System.out.format("Character weight arrays written to %s\n", filePath);
     }
 }
